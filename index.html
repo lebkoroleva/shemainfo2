@@ -3,101 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Интерактивная инфографика — Информация</title>
+<title>ЕГЭ тренажёр — Информация</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
 
 <style>
 body{
-font-family:Nunito;
 margin:0;
-background:#f7f7f7;
+font-family:Nunito;
+background:linear-gradient(120deg,#eef2f7,#ffffff);
 }
 
-.container{
-max-width:1200px;
+.wrapper{
+max-width:900px;
 margin:auto;
-padding:40px;
+padding:30px;
 }
 
 h1{
+text-align:center;
 font-family:'Patrick Hand';
 font-size:56px;
-text-align:center;
-margin-bottom:40px;
+margin-bottom:10px;
 }
 
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-gap:25px;
+.topbar{
+display:flex;
+justify-content:space-between;
+flex-wrap:wrap;
+gap:10px;
+margin-bottom:20px;
+}
+
+.badge{
+background:#111;
+color:white;
+padding:8px 16px;
+border-radius:20px;
+font-weight:700;
+}
+
+.progress{
+height:12px;
+background:#ddd;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:25px;
+}
+
+.progress-inner{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#4facfe,#00f2fe);
+transition:.3s;
 }
 
 .card{
 background:white;
-padding:25px;
-border-radius:20px;
-box-shadow:0 10px 20px rgba(0,0,0,0.1);
-cursor:pointer;
-transition:.3s;
-}
-
-.card:hover{
-transform:translateY(-5px) scale(1.03);
-}
-
-.card h2{
-font-family:'Patrick Hand';
-margin-top:0;
-}
-
-/* MODAL */
-
-.modal{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.7);
-display:flex;
-align-items:center;
-justify-content:center;
-opacity:0;
-pointer-events:none;
-transition:.3s;
-}
-
-.modal.active{
-opacity:1;
-pointer-events:auto;
-}
-
-.modal-box{
-background:white;
-padding:40px;
+padding:30px;
 border-radius:25px;
-max-width:600px;
-width:90%;
+box-shadow:0 20px 40px rgba(0,0,0,0.1);
 text-align:center;
-animation:pop .4s;
-}
-
-@keyframes pop{
-from{transform:scale(.7)}
-to{transform:scale(1)}
 }
 
 .answers button{
-display:block;
 width:100%;
-margin:10px 0;
+margin:8px 0;
 padding:12px;
 border:none;
 border-radius:12px;
-background:#eee;
 cursor:pointer;
 font-size:16px;
+background:#eee;
 transition:.2s;
 }
 
@@ -107,18 +84,38 @@ background:#ddd;
 
 .result{
 font-weight:700;
-margin-top:20px;
 font-size:20px;
+margin-top:15px;
+min-height:28px;
 }
 
-.score{
-position:fixed;
-right:20px;
-top:20px;
-background:#111;
+.next{
+margin-top:20px;
+padding:12px 25px;
+border:none;
+border-radius:15px;
+background:#4facfe;
 color:white;
-padding:10px 18px;
-border-radius:20px;
+font-size:16px;
+cursor:pointer;
+}
+
+.timer{
+font-size:26px;
+font-weight:700;
+text-align:center;
+margin-bottom:10px;
+}
+
+.level{
+text-align:center;
+font-weight:700;
+margin-bottom:10px;
+}
+
+.finish{
+text-align:center;
+font-size:26px;
 font-weight:700;
 }
 </style>
@@ -126,132 +123,156 @@ font-weight:700;
 
 <body>
 
-<div class="score">Баллы: <span id="score">0</span></div>
+<div class="wrapper">
 
-<div class="container">
-<h1>ИНФОРМАЦИЯ</h1>
+<h1>ЕГЭ ТРЕНАЖЁР</h1>
 
-<div class="grid">
-
-<div class="card" onclick="openTrainer(0)">
-<h2>Свойства информации</h2>
-<p>Нажми и реши задание ЕГЭ</p>
+<div class="topbar">
+<div class="badge">Баллы: <span id="score">0</span></div>
+<div class="badge">Подряд: <span id="streak">0</span></div>
+<div class="badge">Рекорд: <span id="record">0</span></div>
 </div>
 
-<div class="card" onclick="openTrainer(1)">
-<h2>Данные vs Информация</h2>
-<p>Проверь понимание</p>
+<div class="level">Уровень: <span id="level">Новичок</span></div>
+
+<div class="timer">⏱ <span id="time">30</span></div>
+
+<div class="progress">
+<div class="progress-inner" id="progress"></div>
 </div>
 
-<div class="card" onclick="openTrainer(2)">
-<h2>Сигналы</h2>
-<p>Аналоговый или цифровой?</p>
-</div>
+<div class="card" id="card">
 
-<div class="card" onclick="openTrainer(3)">
-<h2>Носители</h2>
-<p>Выбери правильный ответ</p>
-</div>
-
-</div>
-</div>
-
-<!-- MODAL -->
-
-<div class="modal" id="modal">
-<div class="modal-box">
-
-<h2 id="q"></h2>
+<h2 id="question"></h2>
 
 <div class="answers" id="answers"></div>
 
 <div class="result" id="result"></div>
 
-<br>
-<button onclick="closeModal()">Закрыть</button>
+<button class="next" onclick="nextQuestion()">Следующий вопрос</button>
 
 </div>
+
 </div>
 
 <script>
 
-let score = 0
+let score = Number(localStorage.getItem("score")) || 0
+let record = Number(localStorage.getItem("record")) || 0
+let streak = 0
+let current = {}
+let timer = 30
+let interval
 
-const trainers = [
+const questions = [
 
-{
-q:"Какое свойство означает соответствие реальности?",
-answers:["Полнота","Достоверность","Актуальность","Понятность"],
-correct:1,
-explain:"Достоверность — это соответствие информации реальному положению дел."
-},
+{q:"Какое свойство означает соответствие реальности?",
+a:["Полнота","Достоверность","Актуальность","Понятность"],
+c:1,
+e:"Достоверность — соответствие реальности."},
 
-{
-q:"Что является информацией?",
-answers:["Число 25","Температура 25°C — комфортно","Сигнал","Бит"],
-correct:1,
-explain:"Информация — это осмысленные данные."
-},
+{q:"Что является информацией?",
+a:["37","Температура 37°C — опасно","Бит","Сигнал"],
+c:1,
+e:"Информация — осмысленные данные."},
 
-{
-q:"Какой сигнал является дискретным?",
-answers:["Температура","Речь","Текст в компьютере","Музыка"],
-correct:2,
-explain:"Компьютер работает только с дискретной информацией."
-},
+{q:"Какой сигнал дискретный?",
+a:["Музыка","Температура","Текст","Речь"],
+c:2,
+e:"Компьютер работает с дискретной информацией."},
 
-{
-q:"Что НЕ является носителем?",
-answers:["Бумага","Флешка","Свет","Мысль без записи"],
-correct:3,
-explain:"Информация всегда должна иметь материальный носитель."
-}
+{q:"Что не является носителем?",
+a:["Бумага","Флешка","Свет","Мысль без записи"],
+c:3,
+e:"Информация всегда имеет материальный носитель."}
 
 ]
 
-function openTrainer(i){
+function setLevel(){
+if(score<5) level.innerText="Новичок"
+else if(score<10) level.innerText="Ученик"
+else if(score<20) level.innerText="Эксперт"
+else level.innerText="Мастер ЕГЭ"
+}
 
-const modal = document.getElementById("modal")
-modal.classList.add("active")
+function startTimer(){
+timer=30
+time.innerText=timer
+interval=setInterval(()=>{
+timer--
+time.innerText=timer
+if(timer===0){
+clearInterval(interval)
+showResult(false,"Время вышло")
+}
+},1000)
+}
 
-document.getElementById("q").innerText = trainers[i].q
+function loadQuestion(){
 
-const answersDiv = document.getElementById("answers")
-answersDiv.innerHTML=""
+current = questions[Math.floor(Math.random()*questions.length)]
 
-trainers[i].answers.forEach((a,index)=>{
+question.innerText=current.q
+answers.innerHTML=""
+result.innerText=""
 
-const btn = document.createElement("button")
-btn.innerText = a
-
-btn.onclick = ()=>checkAnswer(index,i)
-
-answersDiv.appendChild(btn)
-
+current.a.forEach((text,i)=>{
+const btn=document.createElement("button")
+btn.innerText=text
+btn.onclick=()=>answer(i)
+answers.appendChild(btn)
 })
 
-document.getElementById("result").innerText=""
+startTimer()
+
 }
 
-function checkAnswer(index,i){
+function answer(i){
 
-if(index===trainers[i].correct){
+clearInterval(interval)
 
+if(i===current.c){
 score++
-document.getElementById("score").innerText=score
-document.getElementById("result").innerText="✅ Верно! "+trainers[i].explain
-
+streak++
+if(streak>record) record=streak
+showResult(true,current.e)
 }else{
+streak=0
+showResult(false,current.e)
+}
 
-document.getElementById("result").innerText="❌ Неверно. "+trainers[i].explain
+localStorage.setItem("score",score)
+localStorage.setItem("record",record)
+
+updateUI()
 
 }
 
+function showResult(ok,text){
+
+result.innerText=(ok?"✅ ":"❌ ")+text
+
+progress.style.width=Math.min(score*5,100)+"%"
+
 }
 
-function closeModal(){
-document.getElementById("modal").classList.remove("active")
+function nextQuestion(){
+loadQuestion()
 }
+
+function updateUI(){
+scoreEl.innerText=score
+streakEl.innerText=streak
+recordEl.innerText=record
+setLevel()
+}
+
+const scoreEl=document.getElementById("score")
+const streakEl=document.getElementById("streak")
+const recordEl=document.getElementById("record")
+
+updateUI()
+loadQuestion()
 
 </script>
 
