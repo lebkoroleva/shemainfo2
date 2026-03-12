@@ -3,67 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ЕГЭ тренажёр — Информация</title>
+<title>Тренажёр ЕГЭ</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
+
 body{
 margin:0;
-font-family:Nunito;
-background:linear-gradient(120deg,#eef2f7,#ffffff);
+font-family:Montserrat;
+background:linear-gradient(120deg,#eef3f9,#ffffff);
 }
 
 .wrapper{
-max-width:900px;
+max-width:1000px;
 margin:auto;
 padding:30px;
 }
 
 h1{
 text-align:center;
-font-family:'Patrick Hand';
-font-size:56px;
+font-size:48px;
 margin-bottom:10px;
 }
 
-.topbar{
-display:flex;
-justify-content:space-between;
-flex-wrap:wrap;
-gap:10px;
-margin-bottom:20px;
-}
-
-.badge{
-background:#111;
-color:white;
-padding:8px 16px;
+.block{
+background:white;
+padding:25px;
 border-radius:20px;
-font-weight:700;
-}
-
-.progress{
-height:12px;
-background:#ddd;
-border-radius:10px;
-overflow:hidden;
+box-shadow:0 15px 35px rgba(0,0,0,0.1);
 margin-bottom:25px;
 }
 
-.progress-inner{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#4facfe,#00f2fe);
-transition:.3s;
+.scheme{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+margin-top:20px;
 }
 
 .card{
-background:white;
-padding:30px;
-border-radius:25px;
-box-shadow:0 20px 40px rgba(0,0,0,0.1);
+background:#f4f7fb;
+padding:20px;
+border-radius:15px;
+cursor:pointer;
+transition:.3s;
 text-align:center;
+font-weight:600;
+}
+
+.card:hover{
+background:#4facfe;
+color:white;
+transform:translateY(-5px);
+}
+
+.hidden{
+display:none;
 }
 
 .answers button{
@@ -74,50 +70,60 @@ border:none;
 border-radius:12px;
 cursor:pointer;
 font-size:16px;
-background:#eee;
-transition:.2s;
+background:#eef2f7;
 }
 
 .answers button:hover{
-background:#ddd;
+background:#dfe6ef;
 }
 
 .result{
 font-weight:700;
-font-size:20px;
 margin-top:15px;
-min-height:28px;
+min-height:25px;
 }
 
 .next{
 margin-top:20px;
 padding:12px 25px;
 border:none;
-border-radius:15px;
+border-radius:12px;
 background:#4facfe;
 color:white;
 font-size:16px;
 cursor:pointer;
 }
 
-.timer{
-font-size:26px;
-font-weight:700;
-text-align:center;
-margin-bottom:10px;
+.topbar{
+display:flex;
+gap:15px;
+justify-content:center;
+margin-bottom:15px;
+flex-wrap:wrap;
 }
 
-.level{
-text-align:center;
+.badge{
+background:#111;
+color:white;
+padding:8px 15px;
+border-radius:20px;
 font-weight:700;
-margin-bottom:10px;
 }
 
-.finish{
-text-align:center;
-font-size:26px;
-font-weight:700;
+.progress{
+height:10px;
+background:#ddd;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:20px;
 }
+
+.progress-inner{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#4facfe,#00f2fe);
+}
+
 </style>
 </head>
 
@@ -125,23 +131,43 @@ font-weight:700;
 
 <div class="wrapper">
 
-<h1>ЕГЭ ТРЕНАЖЁР</h1>
+<h1>Тренажёр ЕГЭ</h1>
+
+<!-- СХЕМА -->
+<div class="block">
+
+<h2>Теория (нажми и начни тренировку)</h2>
+
+<div class="scheme">
+
+<div class="card" onclick="startTrainer('info')">
+Свойства информации
+</div>
+
+<div class="card" onclick="startTrainer('signals')">
+Сигналы
+</div>
+
+<div class="card" onclick="startTrainer('carrier')">
+Носители информации
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ТРЕНАЖЁР -->
+<div class="block hidden" id="trainer">
 
 <div class="topbar">
 <div class="badge">Баллы: <span id="score">0</span></div>
 <div class="badge">Подряд: <span id="streak">0</span></div>
-<div class="badge">Рекорд: <span id="record">0</span></div>
 </div>
-
-<div class="level">Уровень: <span id="level">Новичок</span></div>
-
-<div class="timer">⏱ <span id="time">30</span></div>
 
 <div class="progress">
 <div class="progress-inner" id="progress"></div>
 </div>
-
-<div class="card" id="card">
 
 <h2 id="question"></h2>
 
@@ -157,102 +183,100 @@ font-weight:700;
 
 <script>
 
-let score = Number(localStorage.getItem("score")) || 0
-let record = Number(localStorage.getItem("record")) || 0
-let streak = 0
-let current = {}
-let timer = 30
-let interval
+let score=0
+let streak=0
+let currentTopic=""
+let currentQuestion={}
 
-const questions = [
+const base={
 
+info:[
 {q:"Какое свойство означает соответствие реальности?",
 a:["Полнота","Достоверность","Актуальность","Понятность"],
 c:1,
 e:"Достоверность — соответствие реальности."},
 
-{q:"Что является информацией?",
-a:["37","Температура 37°C — опасно","Бит","Сигнал"],
-c:1,
-e:"Информация — осмысленные данные."},
-
-{q:"Какой сигнал дискретный?",
-a:["Музыка","Температура","Текст","Речь"],
+{q:"Что означает актуальность?",
+a:["Полезность","Новизну","Своевременность","Точность"],
 c:2,
-e:"Компьютер работает с дискретной информацией."},
+e:"Актуальность — своевременность информации."}
+],
 
-{q:"Что не является носителем?",
-a:["Бумага","Флешка","Свет","Мысль без записи"],
+signals:[
+{q:"Какой сигнал дискретный?",
+a:["Речь","Музыка","Текст","Температура"],
+c:2,
+e:"Текст — дискретный сигнал."},
+
+{q:"Компьютер работает с:",
+a:["Непрерывными сигналами","Дискретными сигналами"],
+c:1,
+e:"Компьютер — цифровое устройство."}
+],
+
+carrier:[
+{q:"Что НЕ является носителем?",
+a:["Флешка","Бумага","Свет","Мысль"],
 c:3,
-e:"Информация всегда имеет материальный носитель."}
+e:"Информация должна быть зафиксирована."},
 
+{q:"Что является носителем?",
+a:["Жёсткий диск","Звук без записи","Разговор"],
+c:0,
+e:"Жёсткий диск хранит информацию."}
 ]
 
-function setLevel(){
-if(score<5) level.innerText="Новичок"
-else if(score<10) level.innerText="Ученик"
-else if(score<20) level.innerText="Эксперт"
-else level.innerText="Мастер ЕГЭ"
 }
 
-function startTimer(){
-timer=30
-time.innerText=timer
-interval=setInterval(()=>{
-timer--
-time.innerText=timer
-if(timer===0){
-clearInterval(interval)
-showResult(false,"Время вышло")
-}
-},1000)
+function startTrainer(topic){
+
+document.getElementById("trainer").classList.remove("hidden")
+
+currentTopic=topic
+score=0
+streak=0
+updateUI()
+loadQuestion()
+
 }
 
 function loadQuestion(){
 
-current = questions[Math.floor(Math.random()*questions.length)]
+const arr=base[currentTopic]
+currentQuestion=arr[Math.floor(Math.random()*arr.length)]
 
-question.innerText=current.q
+question.innerText=currentQuestion.q
 answers.innerHTML=""
 result.innerText=""
 
-current.a.forEach((text,i)=>{
+currentQuestion.a.forEach((t,i)=>{
 const btn=document.createElement("button")
-btn.innerText=text
+btn.innerText=t
 btn.onclick=()=>answer(i)
 answers.appendChild(btn)
 })
-
-startTimer()
 
 }
 
 function answer(i){
 
-clearInterval(interval)
-
-if(i===current.c){
+if(i===currentQuestion.c){
 score++
 streak++
-if(streak>record) record=streak
-showResult(true,current.e)
+showResult(true)
 }else{
 streak=0
-showResult(false,current.e)
+showResult(false)
 }
-
-localStorage.setItem("score",score)
-localStorage.setItem("record",record)
 
 updateUI()
 
 }
 
-function showResult(ok,text){
+function showResult(ok){
 
-result.innerText=(ok?"✅ ":"❌ ")+text
-
-progress.style.width=Math.min(score*5,100)+"%"
+result.innerText=(ok?"✅ ":"❌ ")+currentQuestion.e
+progress.style.width=Math.min(score*10,100)+"%"
 
 }
 
@@ -261,18 +285,9 @@ loadQuestion()
 }
 
 function updateUI(){
-scoreEl.innerText=score
-streakEl.innerText=streak
-recordEl.innerText=record
-setLevel()
+document.getElementById("score").innerText=score
+document.getElementById("streak").innerText=streak
 }
-
-const scoreEl=document.getElementById("score")
-const streakEl=document.getElementById("streak")
-const recordEl=document.getElementById("record")
-
-updateUI()
-loadQuestion()
 
 </script>
 
