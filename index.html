@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Интерактивная инфографика — Информация</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+font-family:Nunito;
+margin:0;
+background:#f7f7f7;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:40px;
+}
+
+h1{
+font-family:'Patrick Hand';
+font-size:56px;
+text-align:center;
+margin-bottom:40px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:25px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 20px rgba(0,0,0,0.1);
+cursor:pointer;
+transition:.3s;
+}
+
+.card:hover{
+transform:translateY(-5px) scale(1.03);
+}
+
+.card h2{
+font-family:'Patrick Hand';
+margin-top:0;
+}
+
+/* MODAL */
+
+.modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+display:flex;
+align-items:center;
+justify-content:center;
+opacity:0;
+pointer-events:none;
+transition:.3s;
+}
+
+.modal.active{
+opacity:1;
+pointer-events:auto;
+}
+
+.modal-box{
+background:white;
+padding:40px;
+border-radius:25px;
+max-width:600px;
+width:90%;
+text-align:center;
+animation:pop .4s;
+}
+
+@keyframes pop{
+from{transform:scale(.7)}
+to{transform:scale(1)}
+}
+
+.answers button{
+display:block;
+width:100%;
+margin:10px 0;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#eee;
+cursor:pointer;
+font-size:16px;
+transition:.2s;
+}
+
+.answers button:hover{
+background:#ddd;
+}
+
+.result{
+font-weight:700;
+margin-top:20px;
+font-size:20px;
+}
+
+.score{
+position:fixed;
+right:20px;
+top:20px;
+background:#111;
+color:white;
+padding:10px 18px;
+border-radius:20px;
+font-weight:700;
+}
+</style>
+</head>
+
+<body>
+
+<div class="score">Баллы: <span id="score">0</span></div>
+
+<div class="container">
+<h1>ИНФОРМАЦИЯ</h1>
+
+<div class="grid">
+
+<div class="card" onclick="openTrainer(0)">
+<h2>Свойства информации</h2>
+<p>Нажми и реши задание ЕГЭ</p>
+</div>
+
+<div class="card" onclick="openTrainer(1)">
+<h2>Данные vs Информация</h2>
+<p>Проверь понимание</p>
+</div>
+
+<div class="card" onclick="openTrainer(2)">
+<h2>Сигналы</h2>
+<p>Аналоговый или цифровой?</p>
+</div>
+
+<div class="card" onclick="openTrainer(3)">
+<h2>Носители</h2>
+<p>Выбери правильный ответ</p>
+</div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+
+<div class="modal" id="modal">
+<div class="modal-box">
+
+<h2 id="q"></h2>
+
+<div class="answers" id="answers"></div>
+
+<div class="result" id="result"></div>
+
+<br>
+<button onclick="closeModal()">Закрыть</button>
+
+</div>
+</div>
+
+<script>
+
+let score = 0
+
+const trainers = [
+
+{
+q:"Какое свойство означает соответствие реальности?",
+answers:["Полнота","Достоверность","Актуальность","Понятность"],
+correct:1,
+explain:"Достоверность — это соответствие информации реальному положению дел."
+},
+
+{
+q:"Что является информацией?",
+answers:["Число 25","Температура 25°C — комфортно","Сигнал","Бит"],
+correct:1,
+explain:"Информация — это осмысленные данные."
+},
+
+{
+q:"Какой сигнал является дискретным?",
+answers:["Температура","Речь","Текст в компьютере","Музыка"],
+correct:2,
+explain:"Компьютер работает только с дискретной информацией."
+},
+
+{
+q:"Что НЕ является носителем?",
+answers:["Бумага","Флешка","Свет","Мысль без записи"],
+correct:3,
+explain:"Информация всегда должна иметь материальный носитель."
+}
+
+]
+
+function openTrainer(i){
+
+const modal = document.getElementById("modal")
+modal.classList.add("active")
+
+document.getElementById("q").innerText = trainers[i].q
+
+const answersDiv = document.getElementById("answers")
+answersDiv.innerHTML=""
+
+trainers[i].answers.forEach((a,index)=>{
+
+const btn = document.createElement("button")
+btn.innerText = a
+
+btn.onclick = ()=>checkAnswer(index,i)
+
+answersDiv.appendChild(btn)
+
+})
+
+document.getElementById("result").innerText=""
+}
+
+function checkAnswer(index,i){
+
+if(index===trainers[i].correct){
+
+score++
+document.getElementById("score").innerText=score
+document.getElementById("result").innerText="✅ Верно! "+trainers[i].explain
+
+}else{
+
+document.getElementById("result").innerText="❌ Неверно. "+trainers[i].explain
+
+}
+
+}
+
+function closeModal(){
+document.getElementById("modal").classList.remove("active")
+}
+
+</script>
+
+</body>
+</html>
